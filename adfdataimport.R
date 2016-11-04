@@ -1,3 +1,5 @@
+#QUandl Data import module for test one.adf . Switch statements will be added to make this module 
+#usable for other tests.
 library(Quandl,tseries)
 ticker <- readline(prompt="Insert stock ticker: ")
 input = paste(c("WIKI/",ticker),collapse='')

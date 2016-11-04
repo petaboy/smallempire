@@ -1,36 +1,35 @@
+#This is test one.adf. It performs a stationarity on returns of a stock and on log of returns of a stock.
+#When a low p-value is reached, stationarity can be proven. Regressions are made for stocks with 
+#stationarity. 
 library(tseries)
 start = as.integer(readline(prompt="start: "))
-#end = as.integer(readline(prompt="end: "))
-end <- c(length(test$V2),0.75*length(test$V2),0.50*length(test$V2),0.25*length(test$V2),0.1*length(test$V2),0.05*length(test$V2))
+end <- c(length(test[,2]),0.75*length(test[,2])+start,0.50*length(test[,2])+start,0.25*length(test[,2])+start,0.1*length(test[,2])+start,0.05*length(test[,2])+start)
 
 returns_result <- list()
 log_returns_result <- list()
 returns_regression <- list()
 log_returns_regression <- list()
 
+transform1 <- diff(test[,2])/test[-length(test[,2]),2]
+transform2 <- log(1+ diff(test[,2])/test[-length(test$V2),2])
 
 for (i in 1:length(end)) {
   name <- paste(i)
-  transform1 <- test$V2[start:end[i]]/test$V2[end[i]]
-  transform2 <- log(test$V2[start:end[i]]/test$V2[end[i]])
-  tmp1 <- adf.test(transform1, alternative = 'stationary', 6*trunc(((length(test$V2[start:end[i]])/100))^(1/4) ))
-  tmp2 <- adf.test(transform2, alternative = 'stationary', 6*trunc(((length(test$V2[start:end[i]])/100))^(1/4) ))
-  returns_result[[name]] <- tmp1
-  log_returns_result[[name]] <- tmp2
+  
+  returns_result[[name]] <- adf.test(transform1[start:(end[i]-1)], alternative = 'stationary', 6*trunc(((length(test[start:end[i],2])/100))^(1/4) ))
+  log_returns_result[[name]] <- adf.test(transform2[start:(end[i]-1)], alternative = 'stationary', 6*trunc(((length(test[start:end[i],2])/100))^(1/4) ))
   
   par(mfrow=c(2,1))  
-  plot(test$V1[start:end[i]],transform1,main="Return of Stock", ylab = "times Return")
-  if (tmp1$p.value < 0.07) {
-    tmp3 <-lm(as.integer(transform1)~test$V1[start:end[i]])
-    returns_regression[[name]] <-tmp3
-    abline(tmp3)  
+  plot(test$V1[start:end[i]],transform1[start:end[i]],main="Return of Stock", ylab = "times Return")
+  if (returns_result[[name]]$p.value < 0.07) {
+    returns_regression[[name]] <-lm(as.integer(transform1[start:end[i]])~test$V1[start:end[i]])
+    abline(returns_regression[[name]])  
   }  
   
-  plot(test$V1[start:end[i]],transform2,main="Returns of Stock", ylab = "log of times Return")
-  if (tmp2$p.value < 0.07) {
-      tmp4 <- lm(as.integer(transform2)~test$V1[start:end[i]])
-      log_returns_regression[[name]] <- tmp4
-      abline(tmp4)
+  plot(test$V1[start:end[i]],transform2[start:end[i]],main="Returns of Stock", ylab = "log of times Return")
+  if (log_returns_result[[name]]$p.value < 0.07) {
+    log_returns_regression[[name]] <- lm(as.integer(transform2[start:end[i]])~test$V1[start:(end[i])])
+    abline(log_returns_regression[[name]])
   }
   }
 
